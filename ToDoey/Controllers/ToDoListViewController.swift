@@ -9,7 +9,7 @@
 import UIKit
 import RealmSwift
 
-class ToDoListViewController: UITableViewController {
+class ToDoListViewController: SwipeTableViewController {
 
     var todoItem : Results<Item>?
     let realm = try! Realm()
@@ -20,7 +20,7 @@ class ToDoListViewController: UITableViewController {
         }
     }
     
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    //let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,15 +28,11 @@ class ToDoListViewController: UITableViewController {
     }
     
     //MARK - TableView Data Source Methods
-    override func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
-    }
-    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return todoItem?.count ?? 1
     }
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell")!
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         cell.textLabel?.text = todoItem?[indexPath.row].title ?? "No items added"
         cell.accessoryType = todoItem?[indexPath.row].done ?? false ? .checkmark : .none
         return cell
@@ -92,6 +88,18 @@ class ToDoListViewController: UITableViewController {
         todoItem = selectedCategory?.items.sorted(byKeyPath: "title", ascending: true)
         tableView.reloadData()
     }
+    
+    override func deleteCell(at indexPath: IndexPath) {
+        if let currentItem = self.todoItem?[indexPath.row] {
+            do{
+                try self.realm.write {
+                    self.realm.delete(currentItem)
+                }
+            }catch{
+                print("Error deleting item")
+            }
+        }
+    }
 
 
 }
@@ -113,4 +121,5 @@ extension ToDoListViewController : UISearchBarDelegate {
             
         }
     }
+    
 }
